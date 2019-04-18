@@ -2,7 +2,7 @@ from random_walk import RandomWalk
 import matplotlib.pyplot as plt
 
 
-import time
+import timen
 timestr = time.strftime("%Y%m%d-%H%M%S")
 path = "plot_images/"
 
