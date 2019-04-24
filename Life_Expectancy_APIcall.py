@@ -95,6 +95,8 @@ male_df.plot(kind='line', x="YEAR", y="Value", color='blue', ax=ax)
 L = plt.legend()
 L.get_texts()[0].set_text('Male')
 L.get_texts()[1].set_text('Female')
+plt.title("Life Expectancy at birth")
+plt.ylabel("Years")
 
 plt.show()
 # combined_df.plot.bar()
