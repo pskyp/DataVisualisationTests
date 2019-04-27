@@ -1,66 +1,46 @@
+import json
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import requests
 
-# make an API call and save the responce
+# data Set up
+#########################################
+path = "data_sources/"
+filename = "life_expectancy.txt"
 
-url = "http://apps.who.int/gho/athena/api/GHO/WHOSIS_000001.json?profile=simple"
-r = requests.get(url)
-print("Status Code:", r.status_code)
+r = requests
 data1 = {}
 data2 = []
+responce_dict = {}
 
-# Store API responce in a variable
-repsonce_dict = r.json()
+# see if the file of the data exists and use this if not try and api call and dafe the resut for next time
+try:
+    with open(path + filename, 'r') as file_object:
+        responce_dict = json.load(file_object)
+        print("file object opened and using this for source of data")
+except:
+    print("file opening or reading error, trying online API call")
+    try:
+        url = "http://apps.who.int/gho/athena/api/GHO/WHOSIS_000001.json?profile=simple"
+        r = requests.get(url)
+        print(r.content)
+        print("Status Code:", r.status_code)
+        responce_dict = r.json()
+        with open(path + filename, 'w') as outfile:
+            outfile.write(r.json)
 
-# respoce is nested dictionaries
+    except:
+        print("failed to open file or make online API call")
 
-# {
-#   "dimension": [
-#                  {
-#                    "label": "GHO",
-#                    "display": "Indicator"
-#                  },
-#                  {
-#                    "label": "PUBLISHSTATE",
-#                    "display": "PUBLISH STATES"
-#                  },
-#                  {
-#                    "label": "YEAR",
-#                    "display": "Year"
-#                  },
-#                  {
-#                    "label": "REGION",
-#                    "display": "WHO region"
-#                  },
-#                  {
-#                    "label": "COUNTRY",
-#                    "display": "Country"
-#                  },
-#                  {
-#                    "label": "SEX",
-#                    "display": "Sex"
-#                  }
-#                ],
-#   "fact": [
-#            {
-#              "dim": {
-#                       "PUBLISHSTATE": "Published",
-#                       "REGION": "Europe",
-#                       "SEX": "Female",
-#                       "YEAR": "2011",
-#                       "COUNTRY": "Albania",
-#                       "GHO": "Life expectancy at birth (years)"
-#                     },
-#              "Comments": "WHO life table method: Vital registration",
-#              "Value": "78.2"
-#            # },
-#
+# Data Formating
+#######################################
 
-data1 = repsonce_dict["fact"]
+# get to the data areas
+data1 = responce_dict["fact"]
 
 for item in data1:
-    # combine any commetns and the data values dict
+    # combine any comments and the data values dict and out it into new data 2 list
     data = dict(item["dim"])
     try:
         data["Comments"] = str(item["Comments"])
@@ -72,17 +52,23 @@ for item in data1:
 
     data2.append((data))
 
-# create dataframe and pass in the list of data
+# create dataframe and pass in the list of combind data
 df = pd.DataFrame(data2)
+
+# Data selection
+#######################################
 
 # get the table of justy Rwanda and
 male = (df["COUNTRY"] == "Rwanda") & (df["SEX"] == "Male") & (df["Comments"] == "No Comments")
 female = (df["COUNTRY"] == "Rwanda") & (df["SEX"] == "Female") & (df["Comments"] == "No Comments")
 combined = (df["COUNTRY"] == "Rwanda") & ((df["SEX"] == "Female") | (df["SEX"] == "Male")) & (
-            df["Comments"] == "No Comments")
+        df["Comments"] == "No Comments")
 female_df = df[female].sort_values(by="YEAR")
 male_df = df[male].sort_values(by="YEAR")
 combined_df = df[combined].sort_values(by="YEAR")
+
+# Data Visualisation
+##################################
 
 print(male_df)
 print(female_df)
