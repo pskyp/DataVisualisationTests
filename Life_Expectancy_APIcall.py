@@ -61,28 +61,40 @@ df = pd.DataFrame(data2)
 # get the table of justy Rwanda and
 male = (df["COUNTRY"] == "Rwanda") & (df["SEX"] == "Male") & (df["Comments"] == "No Comments")
 female = (df["COUNTRY"] == "Rwanda") & (df["SEX"] == "Female") & (df["Comments"] == "No Comments")
-combined = (df["COUNTRY"] == "Rwanda") & ((df["SEX"] == "Female") | (df["SEX"] == "Male")) & (
-        df["Comments"] == "No Comments")
+combined = (df["Comments"] == "No Comments")
 female_df = df[female].sort_values(by="YEAR")
 male_df = df[male].sort_values(by="YEAR")
 combined_df = df[combined].sort_values(by="YEAR")
+combined_df = combined_df.loc[:, ['YEAR', 'Value']]
+combined_df = combined_df.groupby('YEAR').mean().reset_index()
+# smooth the data
+combined_df['rolling_Mean'] = combined_df['Value'].rolling(2).mean()
+
+
 
 # Data Visualisation
 ##################################
 
 print(male_df)
 print(female_df)
+
+print(combined_df)
+
+
 # get current axis
 ax = plt.gca()
 
 female_df.plot(kind='line', x="YEAR", y="Value", color='red', ax=ax)
 male_df.plot(kind='line', x="YEAR", y="Value", color='blue', ax=ax)
+combined_df.plot(kind='line', x="YEAR", y="rolling_Mean", color='orange', ax=ax)
 
 L = plt.legend()
-L.get_texts()[0].set_text('Male')
-L.get_texts()[1].set_text('Female')
-plt.title("Life Expectancy at birth")
+L.get_texts()[0].set_text('Female')
+L.get_texts()[1].set_text('Male')
+L.get_texts()[2].set_text('Global Combined sex Avg.')
+plt.title("Life Expectancy at birth in Rwanda")
 plt.ylabel("Years")
 
 plt.show()
 # combined_df.plot.bar()
+# todo plot global average and Africa Aferage
